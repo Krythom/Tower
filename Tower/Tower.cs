@@ -17,12 +17,14 @@ namespace Tower
     {
         //0 to skip drawing, 1 for base speed, higher for faster
         private const int _speedup = 100;
-        private const int WorldX = 500;
+        private const int WindowX = 500;
+        private const int WindowY = 500;
         private const int WorldY = 500;
-        private const float MutationStrength = 0.5f;
-        private const double Rarity = 0.99;
+        private const int WorldX = 500;
+        private const float MutationStrength = 3f;
+        private const double Rarity = 0.8;
         private const bool BatchMode = false;
-        
+
         private readonly GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private Texture2D _tex;
@@ -58,8 +60,8 @@ namespace Tower
             _startCol = new RGB(rand.Next(256), rand.Next(256), rand.Next(256));
 
             InitWorld();
-            _graphics.PreferredBackBufferHeight = 600;
-            _graphics.PreferredBackBufferWidth = 600;
+            _graphics.PreferredBackBufferHeight = WindowY;
+            _graphics.PreferredBackBufferWidth = WindowX;
             _graphics.SynchronizeWithVerticalRetrace = false;
             _graphics.ApplyChanges();
 
@@ -74,9 +76,14 @@ namespace Tower
 
         protected override void Update(GameTime gameTime)
         {
-            if (false)
+            _completed = true;
+
+            foreach (Seed seed in seeds)
             {
-                _completed = true;
+                if (seed.Alive())
+                {
+                    _completed = false;
+                }
             }
 
             if (_completed)
@@ -120,7 +127,7 @@ namespace Tower
             _spriteBatch.Begin();
 
             _tex.SetData(_backingColors);
-            _spriteBatch.Draw(_tex, new Rectangle(0,0,600,600), Color.White);
+            _spriteBatch.Draw(_tex, new Rectangle(0,0,WindowX,WindowY), Color.White);
 
             _spriteBatch.End();
 
@@ -174,10 +181,10 @@ namespace Tower
                 {
                     if (buildHeight > s.GetHeight())
                     {
-                        for (int y = Math.Max(WorldY - buildHeight, 10); y < WorldY - s.GetHeight(); y++)
+                        for (int y = Math.Max(WorldY - buildHeight, 0); y < WorldY - s.GetHeight(); y++)
                         {
-                            world[y, buildX] = new Block(_startCol, buildX, y);
-                            colors[y, buildX] = _startCol.ToColor();
+                            world[buildX, y] = new Block(_startCol, buildX, y);
+                            colors[buildX, y] = _startCol.ToColor();
                         }
                         s.SetHeight(buildHeight);
                         buildHeight = 0;
