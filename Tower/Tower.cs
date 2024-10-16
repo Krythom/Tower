@@ -17,12 +17,15 @@ namespace Tower
     {
         //0 to skip drawing, 1 for base speed, higher for faster
         private const int _speedup = 100;
-        private const int WindowX = 500;
-        private const int WindowY = 500;
-        private const int WorldY = 500;
-        private const int WorldX = 500;
-        private const float MutationStrength = 3f;
-        private const double Rarity = 0.8;
+        private const int WindowX = 800;
+        private const int WindowY = 800;
+        private const int WorldY = 1600;
+        private const int WorldX = 1600;
+
+        private const int widthMin = 1;
+        private const int widthMax = 30;
+        private const float MutationStrength = 1f;
+        private const double Rarity = 0.9;
         private const bool BatchMode = false;
 
         private readonly GraphicsDeviceManager _graphics;
@@ -174,17 +177,31 @@ namespace Tower
             if (rand.NextDouble() > Rarity)
             {
                 //Build
-                //Add widths?
+                int width = rand.Next(widthMin, widthMax);
                 Seed s = seeds[buildX];
 
                 if (s.Alive())
                 {
                     if (buildHeight > s.GetHeight())
                     {
-                        for (int y = Math.Max(WorldY - buildHeight, 0); y < WorldY - s.GetHeight(); y++)
+                        for (int x = Math.Max(buildX - width/2, 0); x < Math.Min(buildX + width / 2, WorldX); x++)
                         {
-                            world[buildX, y] = new Block(_startCol, buildX, y);
-                            colors[buildX, y] = _startCol.ToColor();
+                            for (int y = Math.Max(WorldY - buildHeight, 0); y < WorldY - s.GetHeight(); y++)
+                            {
+                                if (world[x,y].Type == Cell.CellType.Void)
+                                {
+                                    world[x, y] = new Block(_startCol, buildX, y);
+                                    colors[x, y] = _startCol.ToColor();
+                                }
+                                else if (rand.NextDouble() > 0.9)
+                                {
+                                    Color col = world[x,y].Color.ToColor();
+                                    col = new Color(256 - col.R, 256 - col.G, 256 - col.B);
+
+                                    world[x, y] = new Block(new RGB(col.R, col.G, col.B), buildX, y);
+                                    colors[x, y] = col;
+                                }
+                            }
                         }
                         s.SetHeight(buildHeight);
                         buildHeight = 0;
